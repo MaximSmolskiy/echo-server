@@ -8,15 +8,18 @@
 #include <sys/un.h>
 
 int main() {
-  const auto socket_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+  const auto socket_family = AF_UNIX;
+  const auto socket_fd = socket(socket_family, SOCK_STREAM, 0);
   if (socket_fd == -1) {
     err(EXIT_FAILURE, "socket");
   }
 
   struct sockaddr_un address;
   memset(&address, 0, sizeof(address));
-  address.sun_family = AF_UNIX;
-  strncpy(address.sun_path, "/tmp/socket.sock", sizeof(address.sun_path) - 1);
+  address.sun_family = socket_family;
+
+  const auto socket_path = "/tmp/socket.sock";
+  strncpy(address.sun_path, socket_path, sizeof(address.sun_path) - 1);
 
   if (bind(socket_fd, reinterpret_cast<sockaddr*>(&address), sizeof(address)) == -1) {
     err(EXIT_FAILURE, "bind");
@@ -49,7 +52,7 @@ int main() {
     err(EXIT_FAILURE, "close");
   }
 
-  if (unlink("/tmp/socket.sock") == -1) {
+  if (unlink(socket_path) == -1) {
     err(EXIT_FAILURE, "unlink");
   }
 }
