@@ -29,23 +29,25 @@ int main() {
     err(EXIT_FAILURE, "listen");
   }
 
-  const auto connection_fd = accept(socket_fd, nullptr, nullptr);
-  if (connection_fd == -1) {
-    err(EXIT_FAILURE, "accept");
-  }
+  while (true) {
+    const auto connection_fd = accept(socket_fd, nullptr, nullptr);
+    if (connection_fd == -1) {
+      err(EXIT_FAILURE, "accept");
+    }
 
-  char buffer[1024];
-  const auto buffer_size = read(connection_fd, buffer, sizeof(buffer));
-  if (buffer_size == -1) {
-    err(EXIT_FAILURE, "read");
-  }
+    char buffer[1024];
+    const auto buffer_size = read(connection_fd, buffer, sizeof(buffer));
+    if (buffer_size == -1) {
+      err(EXIT_FAILURE, "read");
+    }
 
-  if (write(connection_fd, buffer, buffer_size) == -1) {
-    err(EXIT_FAILURE, "write");
-  }
+    if (write(connection_fd, buffer, buffer_size) == -1) {
+      err(EXIT_FAILURE, "write");
+    }
 
-  if (close(connection_fd) == -1) {
-    err(EXIT_FAILURE, "close");
+    if (close(connection_fd) == -1) {
+      err(EXIT_FAILURE, "close");
+    }
   }
 
   if (close(socket_fd) == -1) {
