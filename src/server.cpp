@@ -1,13 +1,30 @@
 #include <err.h>
 #include <unistd.h>
 
+#include <cerrno>
+#include <csignal>
 #include <cstdlib>
 #include <cstring>
 
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include <atomic>
+
+std::atomic<bool> stop = false;
+
+void handleSignal(const int) {
+  stop = true;
+}
+
 int main() {
+  struct sigaction signal_action;
+  signal_action.sa_handler = handleSignal;
+  sigemptyset(&signal_action.sa_mask);
+  signal_action.sa_flags = 0;
+
+  sigaction(SIGINT, &signal_action, nullptr);
+
   const auto socket_family = AF_UNIX;
   const auto socket_fd = socket(socket_family, SOCK_STREAM, 0);
   if (socket_fd == -1) {
@@ -29,9 +46,12 @@ int main() {
     err(EXIT_FAILURE, "listen");
   }
 
-  while (true) {
+  while (!stop) {
     const auto connection_fd = accept(socket_fd, nullptr, nullptr);
     if (connection_fd == -1) {
+      if (errno == EINTR) {
+        continue;
+      }
       err(EXIT_FAILURE, "accept");
     }
 
