@@ -24,6 +24,7 @@ int main() {
   signal_action.sa_flags = 0;
 
   sigaction(SIGINT, &signal_action, nullptr);
+  sigaction(SIGTERM, &signal_action, nullptr);
 
   const auto socket_family = AF_UNIX;
   const auto socket_fd = socket(socket_family, SOCK_STREAM, 0);
